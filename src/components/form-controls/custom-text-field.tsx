@@ -47,6 +47,7 @@ export function CustomTextField({
          rows={rows}
          InputProps={InputProps}
          inputProps={restProps}
+         InputLabelProps={{ shrink: true }}
       />
    )
 }

@@ -9,144 +9,115 @@ import {
    Tabs,
    Typography
 } from '@mui/material'
-import { productApi } from 'api-client'
-import axiosClient from 'api-client/axios-client'
-import { ProductList, ProductListToolbar } from 'components/product'
-import { ProductAddEditModal } from 'components/product/product-add-edit-modal'
-import {
-   PaginationParams,
-   Product,
-   ProductPayload,
-   ProductQueryParams,
-   ResponseListData
-} from 'models'
+import ProductList from 'components/product/product-list'
+import { ProductListToolbar } from 'components/product'
+import ProductAddEditModal from 'components/product/product-add-edit-modal'
 import Head from 'next/head'
 import { useSnackbar } from 'notistack'
-import { ChangeEvent, useEffect, useRef, useState } from 'react'
-import useSWR from 'swr'
-import queryString from 'query-string'
-import { Download as DownloadIcon } from '../icons/download'
-import { Upload as UploadIcon } from '../icons/upload'
-import { DashboardLayout } from 'components/layouts'
+import { useEffect, useRef, useState } from 'react'
+import DashboardLayout from 'components/layouts/dashboard-layout'
+import foodApi from 'api/foodApi'
 
 const DEFAULT_PAGINATION = {
-   totalItems: 10,
-   totalPages: 1,
-   currentPage: 1,
-   pageSize: 12
+   total_items: 10,
+   total: 1,
+   page: 1,
+   limit: 10
 }
+
 const Products = () => {
    const { enqueueSnackbar } = useSnackbar()
-   const [pagination, setPagination] = useState<PaginationParams>(DEFAULT_PAGINATION)
-   const [filters, setFilters] = useState<Partial<ProductQueryParams>>({
-      orderBy: '',
-      inStock: '',
-      search: ''
+   const [productList, setProductList] = useState([])
+   const [pagination, setPagination] = useState(DEFAULT_PAGINATION)
+   const [filters, setFilters] = useState({
+      search: '',
+      orderBy: 'updated_at desc'
    })
-
-   const fetcher = (url: string) => {
-      return axiosClient
-         .get<any, ResponseListData<Product>>(url)
-         .then((res: ResponseListData<Product>) => {
-            setPagination(res.pagination)
-            return res.data
-         })
-   }
-
-   const { data: productList, mutate } = useSWR(
-      `products?page=${pagination.currentPage}&pageSize=${
-         pagination.pageSize
-      }&${queryString.stringify(filters, { skipEmptyString: true })}`,
-      fetcher,
-      {
-         revalidateOnFocus: true
+   useEffect(() => {
+      const getUsers = async () => {
+         const { response, err } = await foodApi.getList(pagination, filters)
+         if (err) {
+            enqueueSnackbar(err.message, {
+               variant: 'error'
+            })
+            return
+         }
+         setProductList(response.data)
+         setPagination({ ...response.paging, total_items: response.data.length })
       }
-   )
+      getUsers()
+   }, [pagination.page, pagination.limit, pagination.total, filters.search])
 
    const [isEdit, setIsEdit] = useState(false)
    const [isEditModalOpen, setIsEditModalOpen] = useState(false)
-   const [editProduct, setEditProduct] = useState<Product>()
-   const productListTitleRef = useRef<HTMLElement>(null)
+   const [editProduct, setEditProduct] = useState()
+   const productListTitleRef = useRef(null)
    const executeScroll = () => {
       if (productListTitleRef.current) productListTitleRef.current.scrollIntoView()
    }
 
-   const handleChangePagination = (event: ChangeEvent<unknown>, value: number) => {
-      executeScroll()
-      setPagination({
-         ...pagination,
-         currentPage: value
-      })
+   const handleAddEditProduct = async product => {
+      // if (editProduct?.id) {
+      //    try {
+      //       await productApi.update(editProduct._id, product).then(res => {
+      //          if (!productList) return
+      //          const updatedProduct = res.data
+      //          const idx = productList.findIndex(product => product._id == updatedProduct?._id)
+      //          const newProductList = [...productList]
+      //          if (updatedProduct && idx >= 0) newProductList[idx] = updatedProduct
+      //          mutate(newProductList, true)
+      //          handleCloseAddEditModal()
+      //          enqueueSnackbar(res.message, {
+      //             variant: 'success'
+      //          })
+      //       })
+      //    } catch (error) {
+      //       enqueueSnackbar(error.message, {
+      //          variant: 'error'
+      //       })
+      //    }
+      // } else {
+      //    try {
+      //       await productApi.add(product).then(res => {
+      //          if (!productList) return
+      //          const addedProduct = res.data
+      //          if (addedProduct) {
+      //             const newProductList = [addedProduct, ...productList].slice(
+      //                0,
+      //                pagination.pageSize
+      //             )
+      //             if (newProductList) {
+      //                mutate(newProductList, true)
+      //             }
+      //          }
+      //          handleCloseAddEditModal()
+      //          enqueueSnackbar(res.message, {
+      //             variant: 'success'
+      //          })
+      //       })
+      //    } catch (error: any) {
+      //       enqueueSnackbar(error.message, {
+      //          variant: 'error'
+      //       })
+      //    }
+      // }
    }
 
-   const handleAddEditProduct = async (product: ProductPayload) => {
-      if (editProduct?._id) {
-         try {
-            await productApi.update(editProduct._id, product).then(res => {
-               if (!productList) return
-
-               const updatedProduct = res.data
-               const idx = productList.findIndex(product => product._id == updatedProduct?._id)
-               const newProductList = [...productList]
-
-               if (updatedProduct && idx >= 0) newProductList[idx] = updatedProduct
-               mutate(newProductList, true)
-               handleCloseAddEditModal()
-               enqueueSnackbar(res.message, {
-                  variant: 'success'
-               })
-            })
-         } catch (error: any) {
-            enqueueSnackbar(error.message, {
-               variant: 'error'
-            })
-         }
-      } else {
-         try {
-            await productApi.add(product).then(res => {
-               if (!productList) return
-
-               const addedProduct = res.data
-               if (addedProduct) {
-                  const newProductList = [addedProduct, ...productList].slice(
-                     0,
-                     pagination.pageSize
-                  )
-
-                  if (newProductList) {
-                     mutate(newProductList, true)
-                  }
-               }
-
-               handleCloseAddEditModal()
-               enqueueSnackbar(res.message, {
-                  variant: 'success'
-               })
-            })
-         } catch (error: any) {
-            enqueueSnackbar(error.message, {
-               variant: 'error'
-            })
-         }
-      }
-   }
-
-   const handleDeleteProduct = async (id: string) => {
-      try {
-         await productApi.delete(id).then(res => {
-            if (!productList) return
-
-            const newProductList = productList.filter(product => product._id !== id)
-            mutate(newProductList, true)
-            enqueueSnackbar(res.message, {
-               variant: 'success'
-            })
-         })
-      } catch (error: any) {
-         enqueueSnackbar(error.message, {
-            variant: 'error'
-         })
-      }
+   const handleDeleteProduct = async id => {
+      // try {
+      //    await productApi.delete(id).then(res => {
+      //       if (!productList) return
+      //       const newProductList = productList.filter(product => product._id !== id)
+      //       mutate(newProductList, true)
+      //       enqueueSnackbar(res.message, {
+      //          variant: 'success'
+      //       })
+      //    })
+      // } catch (error: any) {
+      //    enqueueSnackbar(error.message, {
+      //       variant: 'error'
+      //    })
+      // }
    }
 
    const handleCloseAddEditModal = () => {
@@ -154,7 +125,7 @@ const Products = () => {
       setEditProduct(undefined)
    }
 
-   const handleChangeTab = (event: React.SyntheticEvent, newValue: string) => {
+   const handleChangeTab = (event, newValue) => {
       setPagination(DEFAULT_PAGINATION)
       setFilters({
          ...filters,
@@ -162,14 +133,22 @@ const Products = () => {
       })
    }
 
-   const handleSearch = (search: string) => {
+   const handleChangePagination = (event, value) => {
+      executeScroll()
+      setPagination({
+         ...pagination,
+         page: value
+      })
+   }
+   const handleSearch = search => {
       setPagination(DEFAULT_PAGINATION)
       setFilters({
          ...filters,
          search
       })
    }
-   const handleChangeSorting = (orderBy: string) => {
+
+   const handleChangeSorting = orderBy => {
       setPagination(DEFAULT_PAGINATION)
       setFilters({
          ...filters,
@@ -238,7 +217,7 @@ const Products = () => {
                <ProductList
                   products={productList}
                   pagination={pagination}
-                  onEditClick={(product: Product) => {
+                  onEditClick={product => {
                      setIsEditModalOpen(true)
                      setEditProduct(product)
                      setIsEdit(true)

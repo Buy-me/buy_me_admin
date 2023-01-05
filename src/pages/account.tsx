@@ -1,30 +1,29 @@
 import Head from 'next/head'
 import { Box, Container, Grid, Typography } from '@mui/material'
-import { AccountProfile, AccountProfileDetails } from 'components/account'
-import { useAuth } from 'hooks'
+import { AccountProfile } from 'components/account'
+import AccountProfileDetails from 'components/account/account-profile-details'
 import { ChangePasswordFormValues, User } from 'models'
-import { authApi } from 'api-client'
 import { SettingsPassword } from 'components/settings/settings-password'
-import { DashboardLayout } from 'components/layouts'
+import DashboardLayout from 'components/layouts/dashboard-layout'
 
 const Account = () => {
-   const { updateProfile } = useAuth()
+   // const { updateProfile } = useAuth()
 
    const handleUpdateAccount = async (payload: Partial<User>) => {
-      try {
-         await updateProfile(payload)
-      } catch (error) {
-         console.log('error to update profile', error)
-      }
+      // try {
+      //    await updateProfile(payload)
+      // } catch (error) {
+      //    console.log('error to update profile', error)
+      // }
    }
    const handleChangePassword = async (payload: ChangePasswordFormValues) => {
-      try {
-         await authApi.changePassword(payload).then(res => {
-            console.log(res)
-         })
-      } catch (error) {
-         console.log('error to update profile', error)
-      }
+      // try {
+      //    await authApi.changePassword(payload).then(res => {
+      //       console.log(res)
+      //    })
+      // } catch (error) {
+      //    console.log('error to update profile', error)
+      // }
    }
 
    return (

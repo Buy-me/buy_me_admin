@@ -69,11 +69,11 @@ export const ProductListToolbar = ({
                         value={filters.orderBy ? filters.orderBy : 'updatedAt-desc'}
                         onChange={handleChangeSort}
                      >
-                        <MenuItem value="updatedAt-desc">Default Sorting</MenuItem>
+                        <MenuItem value="updated_at desc">Default Sorting</MenuItem>
 
-                        <MenuItem value="createdAt-desc">Sort by latest</MenuItem>
-                        <MenuItem value="price-asc">Sort by price: low to high</MenuItem>
-                        <MenuItem value="price-desc">Sort by price: high to low</MenuItem>
+                        <MenuItem value="created_at desc">Sort by latest</MenuItem>
+                        <MenuItem value="price asc">Sort by price: low to high</MenuItem>
+                        <MenuItem value="price desc">Sort by price: high to low</MenuItem>
                      </Select>
                   </Grid>
                </Grid>

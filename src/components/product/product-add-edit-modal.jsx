@@ -6,7 +6,7 @@ import {
    DialogTitle,
    InputAdornment
 } from '@mui/material'
-import React, { ReactNode, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
 import * as yup from 'yup'
@@ -14,38 +14,32 @@ import { Category, Product, ProductPayload } from 'models'
 import { CustomSelectField, CustomTextField } from 'components/form-controls'
 import { LoadingButton } from '@mui/lab'
 import useSWR from 'swr'
-
-export interface ProductAddEditModalProps {
-   isOpen: boolean
-   isEdit: boolean
-   data?: Product
-   onClose: () => void
-   onSubmit: (product: ProductPayload) => Promise<void>
-}
+import categoryApi from 'api/categoryApi'
 
 const schema = yup.object({
    title: yup.string().max(255).required(),
    desc: yup.string().max(255).required(),
    img: yup.string().max(255).required(),
-   categories: yup.array(yup.string().max(255)),
    price: yup.number().integer().min(0),
    quantity: yup.number().integer().min(0)
 })
 
-export function ProductAddEditModal({
-   isOpen,
-   isEdit,
-   data,
-   onClose,
-   onSubmit
-}: ProductAddEditModalProps) {
-   const { data: options = [] } = useSWR('categories', {
-      dedupingInterval: 60 * 60 * 1000, // 1hr
-      revalidateOnFocus: false,
-      revalidateOnMount: true
-   })
+const ProductAddEditModal = ({ isOpen, isEdit, data, onClose, onSubmit }) => {
+   // const { data: options = [] } = useSWR('categories', {
+   //    dedupingInterval: 60 * 60 * 1000, // 1hr
+   //    revalidateOnFocus: false,
+   //    revalidateOnMount: true
+   // })
+   const [categories, setCategories] = useState([])
 
-   const form = useForm<ProductPayload>({
+   useEffect(() => {
+      const getCategories = async () => {
+         const { response, err } = await categoryApi.getList()
+         setCategories(response.data)
+      }
+      getCategories()
+   }, [])
+   const form = useForm({
       defaultValues: {
          title: '',
          desc: '',
@@ -62,7 +56,7 @@ export function ProductAddEditModal({
       formState: { isSubmitting }
    } = form
 
-   const handleSaveProduct = async (values: ProductPayload) => {
+   const handleSaveProduct = async values => {
       if (onSubmit) await onSubmit(values)
    }
 
@@ -70,10 +64,10 @@ export function ProductAddEditModal({
       console.log(data)
       if (isEdit) {
          reset({
-            title: data?.title || '',
-            desc: data?.desc || '',
-            img: data?.img || '',
-            categories: data?.categories || [],
+            title: data?.name || '',
+            desc: data?.description || '',
+            img: data?.images.url || '',
+            categories: data?.category_id || [],
             price: data?.price,
             quantity: data?.quantity
          })
@@ -123,12 +117,11 @@ export function ProductAddEditModal({
                   control={control}
                   name="categories"
                   label="Categories"
-                  multiple={true}
                   disabled={isSubmitting}
                   options={
-                     options
-                        ? options.map((item: Category) => ({
-                             value: item.name,
+                     categories
+                        ? categories.map(item => ({
+                             value: item.id,
                              label: item.name
                           }))
                         : []
@@ -161,3 +154,5 @@ export function ProductAddEditModal({
       </Dialog>
    )
 }
+
+export default ProductAddEditModal

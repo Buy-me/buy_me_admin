@@ -14,18 +14,12 @@ import {
    Tooltip,
    Typography
 } from '@mui/material'
-import { Product } from 'models'
 import PropTypes from 'prop-types'
 import { useState } from 'react'
 import { ConfirmDialog } from './confirm-dialog'
 import ReportProblemIcon from '@mui/icons-material/ReportProblem'
 
-interface ProductCardProps {
-   product?: Product
-   onEditClick?: Function
-   onDeleteClick?: Function
-}
-export const ProductCard = ({ product, onEditClick, onDeleteClick, ...rest }: ProductCardProps) => {
+const ProductCard = ({ product, onEditClick, onDeleteClick, ...rest }) => {
    const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
    return product ? (
       <Card
@@ -37,14 +31,32 @@ export const ProductCard = ({ product, onEditClick, onDeleteClick, ...rest }: Pr
          {...rest}
          elevation={6}
       >
-         <CardMedia component="img" height="220" image={product.img} alt={product.title} />
+         <Typography
+            sx={{
+               position: 'absolute',
+               margin: 2,
+               marginTop: 1
+            }}
+            variant="h5"
+         >
+            ${product.price}
+         </Typography>
+         <CardMedia
+            sx={{ marginTop: 2 }}
+            component="img"
+            height="220"
+            image={product.images.url}
+            alt={product.name}
+         />
          <CardContent>
-            <Typography align="center" color="textPrimary" gutterBottom variant="h5">
-               {product.title}
-            </Typography>
-            <Tooltip title={product.desc || false} placement="top">
+            <Tooltip title={product.name || false} placement="top">
+               <Typography align="center" noWrap color="textPrimary" gutterBottom variant="h5">
+                  {product.name}
+               </Typography>
+            </Tooltip>
+            <Tooltip title={product.description || false} placement="top">
                <Typography noWrap align="center" color="textPrimary" variant="body1">
-                  {product.desc}
+                  {product.description}
                </Typography>
             </Tooltip>
          </CardContent>
@@ -139,3 +151,5 @@ export const ProductCard = ({ product, onEditClick, onDeleteClick, ...rest }: Pr
 ProductCard.propTypes = {
    product: PropTypes.object.isRequired
 }
+
+export default ProductCard

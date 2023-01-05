@@ -3,21 +3,9 @@ import { Box } from '@mui/system'
 import { PaginationParams, Product } from 'models'
 import React from 'react'
 import { renderPaginationText } from 'utils'
-import { ProductCard } from '.'
+import ProductCard from './product-card'
 
-export interface ProductListProps {
-   products?: Product[]
-   pagination: PaginationParams
-   onEditClick: Function
-   onDeleteClick: Function
-}
-
-export function ProductList({
-   products,
-   pagination,
-   onEditClick,
-   onDeleteClick
-}: ProductListProps) {
+const ProductList = ({ products, pagination, onEditClick, onDeleteClick }) => {
    return (
       <Box sx={{ pt: 3 }}>
          {products &&
@@ -42,7 +30,7 @@ export function ProductList({
          <Grid container spacing={3}>
             {products
                ? products.map(product => (
-                    <Grid item key={product._id} lg={3} md={4} sm={6} xs={12}>
+                    <Grid item key={product.id} lg={3} md={4} sm={6} xs={12}>
                        <ProductCard
                           product={product}
                           onEditClick={onEditClick}
@@ -59,3 +47,5 @@ export function ProductList({
       </Box>
    )
 }
+
+export default ProductList

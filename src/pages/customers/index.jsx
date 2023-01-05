@@ -18,9 +18,10 @@ import userApi from 'api/userApi'
 import { useSnackbar } from 'notistack'
 
 const DEFAULT_PAGINATION = {
-   total: 5,
+   total_items: 10,
+   total: 1,
    page: 1,
-   limit: 5
+   limit: 10
 }
 
 const Customers = () => {

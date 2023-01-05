@@ -43,10 +43,10 @@ export type AppPropsWithLayout = AppProps & {
 
 //API
 export interface PaginationParams {
-   totalItems: number
-   totalPages: number
-   currentPage: number
-   pageSize: number
+   total_items: number
+   total: number
+   page: number
+   limit: number
 }
 export interface ListParams {
    page?: number

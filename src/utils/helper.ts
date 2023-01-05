@@ -46,10 +46,10 @@ export function downloadFile(data: any, filename: string, mime?: string) {
 }
 
 export const renderPaginationText = (pagination: PaginationParams) => {
-   const isLastIndex = pagination.currentPage === pagination.totalPages
+   const isLastIndex = pagination.page === pagination.total
    return `Showing ${
-      pagination.totalItems > 0 ? (pagination.currentPage - 1) * pagination.pageSize + 1 : 0
-   }–${!isLastIndex ? pagination.currentPage * pagination.pageSize : pagination.totalItems} of ${
-      pagination.totalItems
+      pagination.total_items > 0 ? (pagination.page - 1) * pagination.limit + 1 : 0
+   }–${!isLastIndex ? pagination.page * pagination.limit : pagination.total_items} of ${
+      pagination.total_items
    } results`
 }

@@ -113,7 +113,7 @@ const CustomerOrderListCard = props => {
                                                preparing: 'primary',
                                                on_the_way: 'warning'
                                                //   }[order.tracking_state]
-                                            }[order.tracking_state]
+                                            }[order.tracking_state || 'pending']
                                          }
                                       >
                                          {
@@ -124,7 +124,7 @@ const CustomerOrderListCard = props => {
                                                preparing: 'PREPARING',
                                                on_the_way: 'SHIPPING'
                                                //   }[order.tracking_state]
-                                            }['on_the_way']
+                                            }[order.tracking_state || 'pending']
                                          }
                                       </SeverityPill>
                                    </TableCell>
