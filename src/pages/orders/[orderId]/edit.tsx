@@ -1,45 +1,40 @@
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import EventAvailableRoundedIcon from '@mui/icons-material/EventAvailableRounded'
 import { Box, Button, Container, Grid, Skeleton, Typography } from '@mui/material'
-import { orderApi } from 'api-client'
-import axiosClient from 'api-client/axios-client'
-import { DashboardLayout } from 'components/layouts'
 import { OrderBasicInfoCardEdit } from 'components/order/order-basic-info-card-edit'
 import { format, parseISO } from 'date-fns'
-import { Order, ResponseData } from 'models'
+import { Order } from 'models'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
-import React from 'react'
-import useSWR from 'swr'
+import React, { useEffect, useState } from 'react'
 import Head from 'next/head'
 import { useSnackbar } from 'notistack'
+import DashboardLayout from 'components/layouts/dashboard-layout'
+import orderApi from 'api/orderApi'
 
-export interface EditOrderPageProps {}
-
-const fetcher = (url: string) => {
-   return axiosClient.get<any, ResponseData<Order>>(url).then((res: ResponseData<Order>): Order => {
-      return res.data
-   })
-}
-const EditOrderPage = (props: EditOrderPageProps) => {
+const EditOrderPage = () => {
    const { enqueueSnackbar } = useSnackbar()
    const router = useRouter()
    const { orderId } = router.query
-   const { data: order, mutate } = useSWR(`orders/${orderId}`, fetcher, {
-      revalidateOnFocus: false
-   })
+   const [order, setOrder] = useState<Order>()
+   
+   useEffect(() => {
+      orderApi.getOrderDetail(orderId).then(({response}) => {
+         setOrder(response?.data)
+      })
+   },[])
 
    const handleUpdateBasicInfo = async (payload: Partial<Order>) => {
       if (typeof orderId === 'string') {
          try {
-            await orderApi.update(orderId, payload).then(res => {
-               console.log(res)
-               mutate(res.data, true)
-               router.push(`/orders/${orderId}`)
-               enqueueSnackbar(res.message, {
+            const {response} = await orderApi.updateOrderStatus(orderId, {
+               tracking_state: payload.tracking_state
+            })
+            if(response?.data) {
+               enqueueSnackbar("Success", {
                   variant: 'success'
                })
-            })
+            }
          } catch (error: any) {
             enqueueSnackbar(error.message, {
                variant: 'error'
@@ -50,13 +45,13 @@ const EditOrderPage = (props: EditOrderPageProps) => {
    const handleDeleteOrder = async () => {
       if (typeof orderId === 'string') {
          try {
-            await orderApi.delete(orderId).then(res => {
-               console.log(res)
-               router.push('/orders')
-               enqueueSnackbar(res.message, {
+            const {response} = await orderApi.deleteorder(orderId)
+            if(response?.data) {
+               enqueueSnackbar("Success", {
                   variant: 'success'
                })
-            })
+            }
+            router.push('/orders')
          } catch (error: any) {
             enqueueSnackbar(error.message, {
                variant: 'error'
@@ -67,7 +62,7 @@ const EditOrderPage = (props: EditOrderPageProps) => {
 
    return <>
       <Head>
-         <title>Login | FurnitureStore Dashboard</title>
+         <title>Edit Order | FurnitureStore Dashboard</title>
       </Head>
       <Box
          component="main"
@@ -103,7 +98,7 @@ const EditOrderPage = (props: EditOrderPageProps) => {
             >
                {order ? (
                   <Grid item sx={{ m: 1 }}>
-                     <Typography variant="h4">#{order._id}</Typography>
+                     <Typography variant="h4">#{order.id}</Typography>
                      <Typography
                         variant="body2"
                         color="textSecondary"
@@ -111,7 +106,7 @@ const EditOrderPage = (props: EditOrderPageProps) => {
                      >
                         Placed on
                         <EventAvailableRoundedIcon />
-                        {format(parseISO(order.createdAt), 'dd/MM/yyyy HH:mm')}
+                        {format(parseISO(order.created_at), 'dd/MM/yyyy HH:mm')}
                      </Typography>
                   </Grid>
                ) : (

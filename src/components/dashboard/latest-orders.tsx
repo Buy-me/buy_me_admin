@@ -23,16 +23,40 @@ import useSWR from 'swr'
 import { SeverityPill } from '../severity-pill'
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward'
 import Link from 'next/link'
+import { useEffect, useState } from 'react'
+import orderApi from 'api/orderApi'
+import { PaginationParamsV2 } from 'models'
+import { useSnackbar } from 'notistack'
 
 const NUMBER_ORDERS: number = 6
 
+const DEFAULT_PAGINATION = {
+   limit: 0,
+   page: 1,
+   total: 10,
+}
+
 export const LatestOrders = (props: any) => {
-   const { data: orders } = useSWR(
-      `orders?page=1&pageSize=${NUMBER_ORDERS}&orderBy=createdAt-desc`,
-      {
-         revalidateOnFocus: true
+   const [orders, setOrders] = useState<Order[]>([])
+   const [pagination, setPagination] = useState<PaginationParamsV2>(DEFAULT_PAGINATION)
+   const {enqueueSnackbar} = useSnackbar();
+
+   useEffect(() => {
+      const getOrders = () => {
+         orderApi.listOrder(pagination.limit, pagination.page)
+         .then(({response}) => {
+            setOrders(response?.data)
+         })
+         .catch(({error}) => {
+            enqueueSnackbar(error.message, {
+               variant: 'error'
+            })
+         })
       }
-   )
+
+      getOrders()
+   },[])
+
 
    return (
       <Card {...props}>
@@ -52,9 +76,9 @@ export const LatestOrders = (props: any) => {
                   <TableBody>
                      {orders
                         ? orders.map((order: Order) => (
-                             <TableRow hover key={order._id}>
+                             <TableRow hover key={order.id}>
                                 <TableCell align="left">
-                                   <Link href={`customers/${order.user._id}`} passHref legacyBehavior>
+                                   <Link href={`customers/${order.user_id}`} passHref legacyBehavior>
                                       <Typography
                                          sx={{
                                             cursor: 'pointer',
@@ -64,7 +88,7 @@ export const LatestOrders = (props: any) => {
                                          }}
                                          variant="body2"
                                       >
-                                         {order.user.name}
+                                         {order.name}
                                       </Typography>
                                    </Link>
                                 </TableCell>
@@ -76,16 +100,16 @@ export const LatestOrders = (props: any) => {
                                          gap: 1
                                       }}
                                    >
-                                      {order.products.slice(0, 3).map(product => (
+                                      {order.items.slice(0, 3).map(product => (
                                          <Tooltip
-                                            key={product.productId}
-                                            title={product.title}
+                                            key={product.id}
+                                            title={product.food_origin.name}
                                             placement="top"
                                          >
-                                            <Avatar variant="rounded" src={product.img} />
+                                            <Avatar variant="rounded" src={product.food_origin.images.url} />
                                          </Tooltip>
                                       ))}
-                                      {order.products.length > 3 && (
+                                      {order.items.length > 3 && (
                                          <Tooltip title="and more..." placement="top">
                                             <Box sx={{ height: '100%' }}>
                                                <Typography>...</Typography>
@@ -94,32 +118,32 @@ export const LatestOrders = (props: any) => {
                                       )}
                                    </Box>
                                 </TableCell>
-                                <TableCell align="center">${order.amount.toFixed(2)}</TableCell>
+                                <TableCell align="center">${order.total_price.toFixed(2)}</TableCell>
                                 <TableCell align="center">
                                    <SeverityPill
                                       color={
-                                         {
-                                            PENDING: 'info',
-                                            DELIVERIED: 'secondary',
-                                            REFUNDED: 'error',
-                                            PROCESSING: 'primary',
-                                            CANCELED: 'warning'
-                                         }[order.status || 'PENDING']
+                                       {
+                                          pending: 'info',
+                                          preparing: 'secondary',
+                                          on_the_way: 'error',
+                                          delivered: 'primary',
+                                          cancel: 'warning'
+                                       }[order.tracking_state || 'pending']
                                       }
                                    >
-                                      {order.status}
+                                      {order.tracking_state === "on_the_way" ? "Shipping" : order.tracking_state}
                                    </SeverityPill>
                                 </TableCell>
                                 <TableCell align="center">
                                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                                      <Link href={`/orders/${order._id}/edit`} passHref legacyBehavior>
+                                      <Link href={`/orders/${order.id}/edit`} passHref legacyBehavior>
                                          <Tooltip title="Edit Order" placement="top">
                                             <IconButton size="small">
                                                <PencilIcon width={20} />
                                             </IconButton>
                                          </Tooltip>
                                       </Link>
-                                      <Link href={`/orders/${order._id}`} passHref legacyBehavior>
+                                      <Link href={`/orders/${order.id}`} passHref legacyBehavior>
                                          <Tooltip title="View Details" placement="top">
                                             <IconButton size="small">
                                                <ArrowForwardIcon fontSize="small" />
