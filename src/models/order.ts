@@ -1,27 +1,46 @@
 import { User } from 'models'
 
 export interface Order {
-   _id: string
-   user: User
-   products: ProductOrder[]
-   amount: number
-   deliveryInfo: DeliveryInfo
-   isPaid: boolean
+   id: number
+   status: 1 | 2 | 3 | 4 | 5
+   created_at: string
+   updated_at: string
+   user_id: number
+   name: string
+   phone: string
+   title_address: string
+   detail_address: string
+   total_price: number
+   tracking_state: 'pending' | 'preparing' | 'on_the_way' | 'delivered' | 'cancel'
+   items: ProductOrder[]
    payment: 'COD' | 'PayPal'
-   notes?: string
-   status?: 'PENDING' | 'PROCESSING' | 'DELIVERIED' | 'REFUNDED' | 'CANCELED'
-   deleted?: boolean
-   createdAt: string
-   updatedAt: string
 }
 
 export interface ProductOrder {
-   productId: string
-   title: string
-   img: string
+   id: number
+   status: 1
+   created_at: string
+   updated_at: string
+   order_id: number
+   discount: number
    price: number
    quantity: number
-   amount: number
+   food_origin: {
+      id: number
+      restaurant_id: number
+      category_id: number
+      name: string
+      images: {
+         id: number
+         url: string
+         width: number
+         height: number
+         cloud_name: string
+         extension: string
+      }
+      price: number
+      description: string
+   }
 }
 export interface DeliveryInfo {
    address: Address
@@ -36,8 +55,9 @@ export interface Address {
    province: string
 }
 export type EditOrderFormValues = {
-   deliveryInfo: DeliveryInfo
-   notes: string
-   status: 'PENDING' | 'PROCESSING' | 'DELIVERIED' | 'REFUNDED' | 'CANCELED'
-   amount: number
+   name: string,
+   phone: string,
+   detail_address: string,
+   total_price: number,
+   tracking_state: string,
 }

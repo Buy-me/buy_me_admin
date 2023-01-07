@@ -4,7 +4,6 @@ import { Box, Button, Container, Grid, MenuItem, Skeleton, Typography } from '@m
 import { orderApi } from 'api-client'
 import axiosClient from 'api-client/axios-client'
 import { ButtonDropdownMenu } from 'components/button-dropdown-menu'
-import { DashboardLayout } from 'components/layouts'
 import { OrderBasicInfoCard } from 'components/order/order-basic-info-card'
 import { OrderLineItemsCard } from 'components/order/order-line-items-card'
 import { format, parseISO } from 'date-fns'
@@ -17,6 +16,7 @@ import useSWR from 'swr'
 import { downloadFile } from 'utils'
 import Head from 'next/head'
 import { useSnackbar } from 'notistack'
+import DashboardLayout from 'components/layouts/dashboard-layout'
 
 export interface OrderDetailPageProps {}
 
@@ -54,10 +54,10 @@ function OrderDetailPage(props: OrderDetailPageProps) {
    }
 
    const handleApproveOrder = async () => {
-      await handleUpdateOrder({ status: 'DELIVERIED' })
+      await handleUpdateOrder({ tracking_state: 'delivered' })
    }
    const handleRejectOrder = async () => {
-      await handleUpdateOrder({ status: 'CANCELED' })
+      await handleUpdateOrder({ tracking_state: 'cancel' })
    }
 
    const handleExportInvoice = async () => {
@@ -113,7 +113,7 @@ function OrderDetailPage(props: OrderDetailPageProps) {
             >
                {order ? (
                   <Grid item sx={{ m: 1 }}>
-                     <Typography variant="h4">#{order._id}</Typography>
+                     <Typography variant="h4">#{order.id}</Typography>
                      <Typography
                         variant="body2"
                         color="textSecondary"
@@ -121,7 +121,7 @@ function OrderDetailPage(props: OrderDetailPageProps) {
                      >
                         Placed on
                         <EventAvailableRoundedIcon />
-                        {format(parseISO(order.createdAt), 'dd/MM/yyyy HH:mm')}
+                        {format(parseISO(order.created_at), 'dd/MM/yyyy HH:mm')}
                      </Typography>
                   </Grid>
                ) : (
@@ -142,7 +142,7 @@ function OrderDetailPage(props: OrderDetailPageProps) {
                         </Button>
                      </Link>
 
-                     {order.status === 'PROCESSING' && (
+                     {order.tracking_state === 'pending' && (
                         <ButtonDropdownMenu label="Actions">
                            <MenuItem
                               onClick={handleApproveOrder}
@@ -156,7 +156,7 @@ function OrderDetailPage(props: OrderDetailPageProps) {
                            <MenuItem onClick={handleExportInvoice}>Export Invoice</MenuItem>
                         </ButtonDropdownMenu>
                      )}
-                     {order.status === 'DELIVERIED' && (
+                     {order.tracking_state === 'delivered' && (
                         <ButtonDropdownMenu label="Actions">
                            <MenuItem onClick={handleExportInvoice}>Export Invoice</MenuItem>
                         </ButtonDropdownMenu>

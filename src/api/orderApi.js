@@ -6,6 +6,7 @@ const orderEndpoints = {
 	getOrderDetail:(id) => `/orders/${id}`,
 	updateStatus:(id) => `/orders/${id}`,
 	delete: (id) => `/orders/${id}`,
+	listOrder: (limit, page) => `/orders?limit=${limit}&page=${page}`
 };
 
 const orderApi = {
@@ -38,9 +39,11 @@ const orderApi = {
 		}
 	},
 
-  updateOrderStatus: async (id) => {
+  updateOrderStatus: async (id, data) => {
 		try {
-			const response = await privateClient.patch(orderEndpoints.updateStatus(id));
+			const response = await privateClient.patch(orderEndpoints.updateStatus(id),  {
+				...data,
+			});
 			return { response };
 		} catch (err) {
 			return { err };
@@ -55,6 +58,14 @@ const orderApi = {
 			return { err };
 		}
 	},
+	listOrder: async (limit = 10, page = 1) => {
+		try {
+			const response = await privateClient.get(orderEndpoints.listOrder(limit, page));
+			return { response };
+		} catch (err) {
+			return { err };
+		}
+	}
 };
 
 export default orderApi;
