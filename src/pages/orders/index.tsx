@@ -8,17 +8,13 @@ import {
    Tabs,
    Typography
 } from '@mui/material'
-import axiosClient from 'api-client/axios-client'
 import orderApi from 'api/orderApi'
 import DashboardLayout from 'components/layouts/dashboard-layout'
-import { OrderDetailModal } from 'components/order/order-detail'
 import { OrderListResults } from 'components/order/order-list-results'
-import { Order, PaginationParams, PaginationParamsV2, ResponseListData } from 'models'
+import { PaginationParamsV2 } from 'models'
 import Head from 'next/head'
-import queryString from 'query-string'
 import { ChangeEvent, MouseEvent, useEffect, useState } from 'react'
 import PerfectScrollbar from 'react-perfect-scrollbar'
-import useSwr from 'swr'
 import {useSnackbar} from 'notistack'
 
 const DEFAULT_PAGINATION = {

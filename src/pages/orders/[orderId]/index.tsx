@@ -1,50 +1,51 @@
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import EventAvailableRoundedIcon from '@mui/icons-material/EventAvailableRounded'
 import { Box, Button, Container, Grid, MenuItem, Skeleton, Typography } from '@mui/material'
-import { orderApi } from 'api-client'
-import axiosClient from 'api-client/axios-client'
 import { ButtonDropdownMenu } from 'components/button-dropdown-menu'
 import { OrderBasicInfoCard } from 'components/order/order-basic-info-card'
 import { OrderLineItemsCard } from 'components/order/order-line-items-card'
 import { format, parseISO } from 'date-fns'
 import PencilIcon from 'icons/pencil'
-import { Order, ResponseData } from 'models'
+import { Order } from 'models'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
-import React from 'react'
-import useSWR from 'swr'
-import { downloadFile } from 'utils'
+import React, { useEffect, useState } from 'react'
 import Head from 'next/head'
 import { useSnackbar } from 'notistack'
 import DashboardLayout from 'components/layouts/dashboard-layout'
+import orderApi from 'api/orderApi'
 
 export interface OrderDetailPageProps {}
 
-const fetcher = (url: string) => {
-   return axiosClient.get<any, ResponseData<Order>>(url).then((res: ResponseData<Order>): Order => {
-      console.log(res.data)
-      return res.data
-   })
-}
 function OrderDetailPage(props: OrderDetailPageProps) {
    const { enqueueSnackbar } = useSnackbar()
    const router = useRouter()
    const { orderId } = router.query
+   const [order, setOrder] = useState<Order>()
 
-   const { data: order, mutate } = useSWR(`orders/${orderId}`, fetcher, {
-      revalidateOnFocus: false
-   })
+   const fetchData = () => {
+      orderApi.getOrderDetail(orderId).then(({response}) => {
+         setOrder(response?.data)
+      })
+   }
+
+   useEffect(() => {
+      fetchData()
+   },[])
+
 
    const handleUpdateOrder = async (payload: Partial<Order>) => {
       if (typeof orderId === 'string') {
          try {
-            await orderApi.update(orderId, payload).then(res => {
-               console.log(res)
-               mutate(res.data, true)
-               enqueueSnackbar(res.message, {
+            const {response} = await orderApi.updateOrderStatus(orderId, {
+               tracking_state: payload.tracking_state
+            })
+            if(response?.data) {
+               fetchData();
+               enqueueSnackbar("Success", {
                   variant: 'success'
                })
-            })
+            }
          } catch (error: any) {
             enqueueSnackbar(error.message, {
                variant: 'error'
@@ -54,25 +55,10 @@ function OrderDetailPage(props: OrderDetailPageProps) {
    }
 
    const handleApproveOrder = async () => {
-      await handleUpdateOrder({ tracking_state: 'delivered' })
+      await handleUpdateOrder({ tracking_state: 'preparing' })
    }
    const handleRejectOrder = async () => {
       await handleUpdateOrder({ tracking_state: 'cancel' })
-   }
-
-   const handleExportInvoice = async () => {
-      if (typeof orderId === 'string') {
-         try {
-            await orderApi.exportBill(orderId).then(res => {
-               console.log(res.data)
-               downloadFile(res.data, `Invoice-${orderId}.pdf`, 'application/pdf')
-            })
-         } catch (error: any) {
-            enqueueSnackbar(error.message, {
-               variant: 'error'
-            })
-         }
-      }
    }
 
    return <>
@@ -153,12 +139,6 @@ function OrderDetailPage(props: OrderDetailPageProps) {
                               Approve
                            </MenuItem>
                            <MenuItem onClick={handleRejectOrder}>Reject</MenuItem>
-                           <MenuItem onClick={handleExportInvoice}>Export Invoice</MenuItem>
-                        </ButtonDropdownMenu>
-                     )}
-                     {order.tracking_state === 'delivered' && (
-                        <ButtonDropdownMenu label="Actions">
-                           <MenuItem onClick={handleExportInvoice}>Export Invoice</MenuItem>
                         </ButtonDropdownMenu>
                      )}
                   </Grid>

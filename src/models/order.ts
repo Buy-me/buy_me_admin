@@ -13,7 +13,7 @@ export interface Order {
    total_price: number
    tracking_state: 'pending' | 'preparing' | 'on_the_way' | 'delivered' | 'cancel'
    items: ProductOrder[]
-   payment: 'COD' | 'PayPal'
+   type: string
 }
 
 export interface ProductOrder {

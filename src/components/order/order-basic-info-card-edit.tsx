@@ -151,7 +151,7 @@ export function OrderBasicInfoCardEdit({ order, onSave, onDelete }: OrderBasicIn
                         label="Status"
                         disabled={isSubmitting || !order}
                         options={OrderStatus.map(item => ({
-                           label: item[0].toUpperCase() + item.substring(1),
+                           label: item === "on_the_way" ? "Shipping" : item[0].toUpperCase() + item.substring(1),
                            value: item
                         }))}
                      />
