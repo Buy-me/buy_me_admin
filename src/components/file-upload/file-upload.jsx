@@ -1,121 +1,94 @@
-import React, { useRef, useState } from 'react'
-import {
-   FileUploadContainer,
-   FormField,
-   DragDropText,
-   UploadFileBtn,
-   FilePreviewContainer,
-   ImagePreview,
-   PreviewContainer,
-   PreviewList,
-   FileMetaData,
-   RemoveFileIcon,
-   InputLabel
-} from './file-upload.styles'
+import React, { useRef, useState, useEffect } from 'react'
+import PropTypes from 'prop-types'
 
-const KILO_BYTES_PER_BYTE = 1000
-const DEFAULT_MAX_FILE_SIZE_IN_BYTES = 500000
+import styles from './file-upload.module.css'
 
-const convertNestedObjectToArray = nestedObj => Object.keys(nestedObj).map(key => nestedObj[key])
+// import { ImageConfig } from '../../config/ImageConfig'
+// import uploadImg from '../../assets/cloud-upload-regular-240.png'
 
-const convertBytesToKB = bytes => Math.round(bytes / KILO_BYTES_PER_BYTE)
+const DropFileInput = ({ onFileChange, data, isEdit, ...props }) => {
+   const wrapperRef = useRef(null)
 
-const FileUpload = ({
-   label,
-   updateFilesCb,
-   maxFileSizeInBytes = DEFAULT_MAX_FILE_SIZE_IN_BYTES,
-   ...otherProps
-}) => {
-   const fileInputField = useRef(null)
-   const [files, setFiles] = useState({})
+   const [fileList, setFileList] = useState([])
+   const [fromEdit, setIsEdit] = useState(isEdit)
 
-   const handleUploadBtnClick = () => {
-      fileInputField.current.click()
-   }
+   const onDragEnter = () => wrapperRef.current.classList.add('dragover')
 
-   const addNewFiles = newFiles => {
-      for (let file of newFiles) {
-         if (file.size <= maxFileSizeInBytes) {
-            if (!otherProps.multiple) {
-               return { file }
-            }
-            files[file.name] = file
-         }
+   const onDragLeave = () => wrapperRef.current.classList.remove('dragover')
+
+   const onDrop = () => wrapperRef.current.classList.remove('dragover')
+
+   useEffect(() => {
+      if (isEdit) {
+         setFileList([data.images?.url])
       }
-      return { ...files }
-   }
+   }, [])
 
-   const callUpdateFilesCb = files => {
-      const filesAsArray = convertNestedObjectToArray(files)
-      updateFilesCb(filesAsArray)
-   }
-
-   const handleNewFileUpload = e => {
-      const { files: newFiles } = e.target
-      if (newFiles.length) {
-         let updatedFiles = addNewFiles(newFiles)
-         setFiles(updatedFiles)
-         callUpdateFilesCb(updatedFiles)
+   const onFileDrop = e => {
+      setIsEdit(false)
+      const newFile = e.target.files[0]
+      if (newFile) {
+         const updatedList = [newFile]
+         setFileList(updatedList)
+         onFileChange(updatedList, true)
       }
    }
 
-   const removeFile = fileName => {
-      delete files[fileName]
-      setFiles({ ...files })
-      callUpdateFilesCb({ ...files })
-   }
+   // const fileRemove = file => {
+   //    const updatedList = [...fileList]
+   //    updatedList.splice(fileList.indexOf(file), 1)
+   //    setFileList(updatedList)
+   //    props.onFileChange(updatedList)
+   // }
 
    return (
       <>
-         <FileUploadContainer>
-            <InputLabel>{label}</InputLabel>
-            <DragDropText>Drag and drop your files anywhere or</DragDropText>
-            <UploadFileBtn type="button" onClick={handleUploadBtnClick}>
-               <i className="fas fa-file-upload" />
-               <span> Upload {otherProps.multiple ? 'files' : 'a file'}</span>
-            </UploadFileBtn>
-            <FormField
-               type="file"
-               ref={fileInputField}
-               onChange={handleNewFileUpload}
-               title=""
-               value=""
-               {...otherProps}
-            />
-         </FileUploadContainer>
-         <FilePreviewContainer>
-            <span>To Upload</span>
-            <PreviewList>
-               {Object.keys(files).map((fileName, index) => {
-                  let file = files[fileName]
-                  let isImageFile = file.type.split('/')[0] === 'image'
-                  return (
-                     <PreviewContainer key={fileName}>
-                        <div>
-                           {isImageFile && (
-                              <ImagePreview
-                                 src={URL.createObjectURL(file)}
-                                 alt={`file preview ${index}`}
-                              />
-                           )}
-                           <FileMetaData isImageFile={isImageFile}>
-                              <span>{file.name}</span>
-                              <aside>
-                                 <span>{convertBytesToKB(file.size)} kb</span>
-                                 <RemoveFileIcon
-                                    className="fas fa-trash-alt"
-                                    onClick={() => removeFile(fileName)}
-                                 />
-                              </aside>
-                           </FileMetaData>
-                        </div>
-                     </PreviewContainer>
-                  )
-               })}
-            </PreviewList>
-         </FilePreviewContainer>
+         <div
+            ref={wrapperRef}
+            className={styles.dropFileInput}
+            onDragEnter={onDragEnter}
+            onDragLeave={onDragLeave}
+            onDrop={onDrop}
+         >
+            <div className={styles.dropFileInput__label}>
+               <img
+                  src={
+                     'http://food-delivery-tb.s3-website-ap-southeast-1.amazonaws.com/logo/1720343.png'
+                  }
+                  alt=""
+               />
+               <p>Drag & Drop your files here</p>
+            </div>
+            <input type="file" value="" onChange={onFileDrop} />
+         </div>
+         {fileList.length > 0 ? (
+            <div className="drop-file-preview">
+               <p className={styles.dropFilePreview__title}>Ready to upload</p>
+               {fromEdit ? (
+                  <div className={styles.dropFilePreview__item}>
+                     {/* <p>{item.name}</p> */}
+                     <img src={fileList[0]} alt="" className={styles.dropFilePreview__item} />
+                  </div>
+               ) : (
+                  fileList.map((item, index) => (
+                     <div key={index} className={styles.dropFilePreview__item}>
+                        {/* <p>{item.name}</p> */}
+                        <img
+                           src={URL.createObjectURL(item)}
+                           alt=""
+                           className={styles.dropFilePreview__item}
+                        />
+                     </div>
+                  ))
+               )}
+            </div>
+         ) : null}
       </>
    )
 }
 
-export default FileUpload
+DropFileInput.propTypes = {
+   onFileChange: PropTypes.func
+}
+
+export default DropFileInput

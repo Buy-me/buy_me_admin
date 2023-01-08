@@ -34,7 +34,7 @@ const Products = () => {
       orderBy: 'updated_at desc'
    })
    useEffect(() => {
-      const getUsers = async () => {
+      const getFoods = async () => {
          const { response, err } = await foodApi.getList(pagination, filters)
          if (err) {
             enqueueSnackbar(err.message, {
@@ -45,7 +45,7 @@ const Products = () => {
          setProductList(response.data)
          setPagination({ ...response.paging, total_items: response.data.length })
       }
-      getUsers()
+      getFoods()
    }, [pagination.page, pagination.limit, pagination.total, filters.search])
 
    const [isEdit, setIsEdit] = useState(false)
@@ -57,50 +57,57 @@ const Products = () => {
    }
 
    const handleAddEditProduct = async product => {
-      // if (editProduct?.id) {
-      //    try {
-      //       await productApi.update(editProduct._id, product).then(res => {
-      //          if (!productList) return
-      //          const updatedProduct = res.data
-      //          const idx = productList.findIndex(product => product._id == updatedProduct?._id)
-      //          const newProductList = [...productList]
-      //          if (updatedProduct && idx >= 0) newProductList[idx] = updatedProduct
-      //          mutate(newProductList, true)
-      //          handleCloseAddEditModal()
-      //          enqueueSnackbar(res.message, {
-      //             variant: 'success'
-      //          })
-      //       })
-      //    } catch (error) {
-      //       enqueueSnackbar(error.message, {
-      //          variant: 'error'
-      //       })
-      //    }
-      // } else {
-      //    try {
-      //       await productApi.add(product).then(res => {
-      //          if (!productList) return
-      //          const addedProduct = res.data
-      //          if (addedProduct) {
-      //             const newProductList = [addedProduct, ...productList].slice(
-      //                0,
-      //                pagination.pageSize
-      //             )
-      //             if (newProductList) {
-      //                mutate(newProductList, true)
-      //             }
-      //          }
-      //          handleCloseAddEditModal()
-      //          enqueueSnackbar(res.message, {
-      //             variant: 'success'
-      //          })
-      //       })
-      //    } catch (error: any) {
-      //       enqueueSnackbar(error.message, {
-      //          variant: 'error'
-      //       })
-      //    }
-      // }
+      console.log(product)
+      if (editProduct?.id) {
+         const { response, err } = await foodApi.update(editProduct?.id, {
+            name: product.title,
+            category_id: product.categories,
+            price: product.price,
+            images: product.avatar,
+            description: product.desc
+         })
+
+         if (err) {
+            enqueueSnackbar(err.message, {
+               variant: 'error'
+            })
+         }
+
+         enqueueSnackbar('Update successfully', {
+            variant: 'success'
+         })
+      } else {
+         const { response, err } = await foodApi.create({
+            name: product.title,
+            category_id: product.categories,
+            price: product.price,
+            images: product.avatar,
+            description: product.desc
+         })
+
+         if (err) {
+            enqueueSnackbar(err.message, {
+               variant: 'error'
+            })
+         }
+
+         enqueueSnackbar('Create successfully', {
+            variant: 'success'
+         })
+      }
+
+      const { response, err } = await foodApi.getList(pagination, filters)
+      if (err) {
+         enqueueSnackbar(err.message, {
+            variant: 'error'
+         })
+         return
+      }
+      setProductList(response.data)
+      setPagination({ ...response.paging, total_items: response.data.length })
+
+      setIsEditModalOpen(false)
+      // setEditProduct(undefined)
    }
 
    const handleDeleteProduct = async id => {
@@ -140,6 +147,7 @@ const Products = () => {
          page: value
       })
    }
+
    const handleSearch = search => {
       setPagination(DEFAULT_PAGINATION)
       setFilters({

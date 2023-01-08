@@ -113,9 +113,9 @@ export const OrderListResults = ({
          <TableBody>
             {orderList
                ? orderList.map((order: Order) => (
-                    <TableRow hover key={order._id}>
+                    <TableRow hover key={order.id}>
                        <TableCell align="left" sx={{ minWidth: 200 }}>
-                          <Link href={`/customers/${order.user._id}`} passHref legacyBehavior>
+                          <Link href={`/customers/${order.user_id}`} passHref legacyBehavior>
                              <Typography
                                 sx={{
                                    cursor: 'pointer',
@@ -126,22 +126,22 @@ export const OrderListResults = ({
                                 }}
                                 variant="body2"
                              >
-                                {order.user.name}
+                                {order.name}
                              </Typography>
                           </Link>
                        </TableCell>
                        <TableCell align="left">
                           <Box sx={{ display: 'flex', alignItems: 'end', gap: 1 }}>
-                             {order.products.slice(0, 3).map(product => (
+                             {order.items.slice(0, 3).map(product => (
                                 <Tooltip
-                                   key={product.productId}
-                                   title={product.title}
+                                   key={product.id}
+                                   title={product?.food_origin?.name}
                                    placement="top"
                                 >
-                                   <Avatar variant="rounded" src={product.img} />
+                                   <Avatar variant="rounded" src={product?.food_origin?.images?.url} />
                                 </Tooltip>
                              ))}
-                             {order.products.length > 3 && (
+                             {order.items.length > 3 && (
                                 <Tooltip title="and more..." placement="top">
                                    <Box sx={{ height: '100%' }}>
                                       <Typography>...</Typography>
@@ -151,37 +151,37 @@ export const OrderListResults = ({
                           </Box>
                        </TableCell>
                        <TableCell align="center" sx={{ pr: 5 }}>
-                          {format(parseISO(order.createdAt), 'dd/MM/yyyy')}
+                          {format(parseISO(order.created_at), 'dd-MM-yyyy')}
                        </TableCell>
                        <TableCell align="center" sx={{ pr: 5 }}>
-                          ${order.amount.toFixed(2)}
+                          ${order.total_price.toFixed(2)}
                        </TableCell>
-                       <TableCell align="center">{order.payment}</TableCell>
+                       <TableCell align="center">{order.type}</TableCell>
                        <TableCell align="center" sx={{ minWidth: 200 }}>
                           <SeverityPill
                              color={
                                 {
-                                   PENDING: 'info',
-                                   DELIVERIED: 'secondary',
-                                   REFUNDED: 'error',
-                                   PROCESSING: 'primary',
-                                   CANCELED: 'warning'
-                                }[order.status || 'PENDING']
+                                   pending: 'info',
+                                   preparing: 'secondary',
+                                   on_the_way: 'error',
+                                   delivered: 'primary',
+                                   cancel: 'warning'
+                                }[order.tracking_state || 'pending']
                              }
                           >
-                             {order.status}
+                             {order.tracking_state === "on_the_way" ? "Shipping" : order.tracking_state}
                           </SeverityPill>
                        </TableCell>
                        <TableCell align="center">
                           <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                             <Link href={`/orders/${order._id}/edit`} passHref legacyBehavior>
+                             <Link href={`/orders/${order.id}/edit`} passHref legacyBehavior>
                                 <Tooltip title="Edit Order" placement="top">
                                    <IconButton size="small">
                                       <PencilIcon width={20} />
                                    </IconButton>
                                 </Tooltip>
                              </Link>
-                             <Link href={`/orders/${order._id}`} passHref legacyBehavior>
+                             <Link href={`/orders/${order.id}`} passHref legacyBehavior>
                                 <Tooltip title="View Details" placement="top">
                                    <IconButton size="small">
                                       <ArrowForwardIcon fontSize="small" />

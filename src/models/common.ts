@@ -61,3 +61,9 @@ export interface ResponseListData<T> {
    errorCode: Number
    messgae: string
 }
+
+export interface PaginationParamsV2 {
+   limit: number,
+   page: number,
+   total: number,
+}

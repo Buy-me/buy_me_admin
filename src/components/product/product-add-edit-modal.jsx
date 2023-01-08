@@ -4,32 +4,35 @@ import {
    DialogActions,
    DialogContent,
    DialogTitle,
-   InputAdornment
+   InputAdornment,
+   Box,
+   CardMedia,
+   Avatar,
+   TextField
 } from '@mui/material'
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { useForm } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
 import * as yup from 'yup'
-import { Category, Product, ProductPayload } from 'models'
 import { CustomSelectField, CustomTextField } from 'components/form-controls'
 import { LoadingButton } from '@mui/lab'
-import useSWR from 'swr'
 import categoryApi from 'api/categoryApi'
+import DropFileInput from 'components/file-upload/file-upload'
+import foodApi from 'api/foodApi'
+import { useSnackbar } from 'notistack'
 
 const schema = yup.object({
    title: yup.string().max(255).required(),
    desc: yup.string().max(255).required(),
-   img: yup.string().max(255).required(),
-   price: yup.number().integer().min(0),
+   price: yup
+      .number()
+      .test('is-decimal', 'invalid decimal', value => (value + '').match(/^\d*\.{1}\d*$/)),
    quantity: yup.number().integer().min(0)
 })
 
 const ProductAddEditModal = ({ isOpen, isEdit, data, onClose, onSubmit }) => {
-   // const { data: options = [] } = useSWR('categories', {
-   //    dedupingInterval: 60 * 60 * 1000, // 1hr
-   //    revalidateOnFocus: false,
-   //    revalidateOnMount: true
-   // })
+   const [file, setFile] = useState(null)
+   const { enqueueSnackbar } = useSnackbar()
    const [categories, setCategories] = useState([])
 
    useEffect(() => {
@@ -39,17 +42,19 @@ const ProductAddEditModal = ({ isOpen, isEdit, data, onClose, onSubmit }) => {
       }
       getCategories()
    }, [])
+
    const form = useForm({
       defaultValues: {
          title: '',
          desc: '',
          img: '',
-         categories: [],
+         categories: '',
          price: undefined,
          quantity: undefined
       },
       resolver: yupResolver(schema)
    })
+
    const {
       reset,
       control,
@@ -57,17 +62,30 @@ const ProductAddEditModal = ({ isOpen, isEdit, data, onClose, onSubmit }) => {
    } = form
 
    const handleSaveProduct = async values => {
-      if (onSubmit) await onSubmit(values)
+      let avatar = null
+      if (file !== null) {
+         const { response, err } = await foodApi.upload({
+            file: file
+         })
+         if (err) {
+            enqueueSnackbar(err.message, {
+               variant: 'error'
+            })
+            return
+         } else {
+            console.log('image', response.data)
+            avatar = response.data
+         }
+      }
+      if (onSubmit) await onSubmit({ ...values, avatar: avatar })
    }
 
    useEffect(() => {
-      console.log(data)
       if (isEdit) {
          reset({
             title: data?.name || '',
             desc: data?.description || '',
-            img: data?.images.url || '',
-            categories: data?.category_id || [],
+            categories: data?.category_id || '',
             price: data?.price,
             quantity: data?.quantity
          })
@@ -75,8 +93,7 @@ const ProductAddEditModal = ({ isOpen, isEdit, data, onClose, onSubmit }) => {
          reset({
             title: '',
             desc: '',
-            img: '',
-            categories: [],
+            categories: '',
             price: undefined,
             quantity: undefined
          })
@@ -88,11 +105,22 @@ const ProductAddEditModal = ({ isOpen, isEdit, data, onClose, onSubmit }) => {
       reset()
    }
 
+   const onFileChange = (files, haveEdit) => {
+      //fromEdit == false => thi set iamge
+      console.log(files, haveEdit)
+      if (isEdit) {
+         if (haveEdit) setFile(files[0])
+      } else {
+         setFile(files[0])
+      }
+   }
+
    return (
       <Dialog open={isOpen} onClose={handleClose} scroll="body">
          <DialogTitle>Product</DialogTitle>
          <DialogContent>
             <form>
+               <DropFileInput onFileChange={onFileChange} isEdit={isEdit} data={data} />
                <CustomTextField
                   disabled={isSubmitting}
                   control={control}
@@ -107,12 +135,12 @@ const ProductAddEditModal = ({ isOpen, isEdit, data, onClose, onSubmit }) => {
                   multiline={true}
                   rows={4}
                />
-               <CustomTextField
+               {/* <CustomTextField
                   disabled={isSubmitting}
                   control={control}
                   name="img"
                   label="Image Link"
-               />
+               /> */}
                <CustomSelectField
                   control={control}
                   name="categories"

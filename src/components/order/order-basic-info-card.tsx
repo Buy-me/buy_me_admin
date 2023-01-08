@@ -9,53 +9,15 @@ import {
    Skeleton,
    Typography
 } from '@mui/material'
-import axios, { AxiosResponse } from 'axios'
 import { format, parseISO } from 'date-fns'
-import { District, Order, Province, ResponseData, Ward } from 'models'
+import { Order } from 'models'
 import React from 'react'
-import useSWR from 'swr'
 import Link from 'next/link'
 export interface OrderBasicInfoCardProps {
    order?: Order
 }
 
-function fetcher<T>(url: string) {
-   return axios.get<any, AxiosResponse<T>>(url).then((res: AxiosResponse<T>): T => {
-      return res.data
-   })
-}
 export function OrderBasicInfoCard({ order }: OrderBasicInfoCardProps) {
-   const { data: orderProvince } = useSWR<Province>(
-      () =>
-         order && order?.deliveryInfo.address.province
-            ? `https://provinces.open-api.vn/api/p/${order?.deliveryInfo.address.province}`
-            : null,
-      fetcher,
-      {
-         revalidateOnFocus: false
-      }
-   )
-   const { data: orderDistrict } = useSWR<District>(
-      () =>
-         order && order?.deliveryInfo.address.province
-            ? `https://provinces.open-api.vn/api/d/${order?.deliveryInfo.address.district}`
-            : null,
-      fetcher,
-      {
-         revalidateOnFocus: false
-      }
-   )
-   const { data: orderWard } = useSWR<Ward>(
-      () =>
-         order && order?.deliveryInfo.address.province
-            ? `https://provinces.open-api.vn/api/w/${order?.deliveryInfo.address.ward}`
-            : null,
-      fetcher,
-      {
-         revalidateOnFocus: false
-      }
-   )
-
    return (
       <Card>
          <CardHeader title="Basic info" />
@@ -73,23 +35,12 @@ export function OrderBasicInfoCard({ order }: OrderBasicInfoCardProps) {
                      </Typography>
                      <Box sx={{ flex: 1 }}>
                         <Typography variant="body2" color="primary">
-                           {order.user && (
-                              <Link href={`/customers/${order.user._id}`} passHref legacyBehavior>
-                                 {order.user?.name}
-                              </Link>
-                           )}
+                           <Link href={`/customers/${order.user_id}`} passHref legacyBehavior>
+                              {order.name}
+                           </Link>
                         </Typography>
                         <Typography variant="body2" color="text.secondary">
-                           {order.deliveryInfo.address.street}
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                           {orderWard?.name}
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                           {orderDistrict?.name}
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                           {orderProvince?.name}
+                           {order.detail_address}
                         </Typography>
                      </Box>
                   </ListItem>
@@ -105,7 +56,7 @@ export function OrderBasicInfoCard({ order }: OrderBasicInfoCardProps) {
                      </Typography>
                      <Box sx={{ flex: 1 }}>
                         <Typography variant="body2" color="text.secondary">
-                           {order._id}
+                           {order.id}
                         </Typography>
                      </Box>
                   </ListItem>
@@ -122,8 +73,8 @@ export function OrderBasicInfoCard({ order }: OrderBasicInfoCardProps) {
                      <Box sx={{ flex: 1 }}>
                         <Typography variant="body2" color="text.secondary">
                            {/* {parseISO(order.createdAt)} */}
-                           {order.createdAt &&
-                              format(parseISO(order.createdAt), 'dd/MM/yyyy HH:mm')}
+                           {order.created_at &&
+                              format(parseISO(order.created_at), 'dd/MM/yyyy HH:mm')}
                         </Typography>
                      </Box>
                   </ListItem>
@@ -139,7 +90,7 @@ export function OrderBasicInfoCard({ order }: OrderBasicInfoCardProps) {
                      </Typography>
                      <Box sx={{ flex: 1 }}>
                         <Typography variant="body2" color="text">
-                           {order.payment}
+                           {order.type}
                         </Typography>
                      </Box>
                   </ListItem>
@@ -155,7 +106,7 @@ export function OrderBasicInfoCard({ order }: OrderBasicInfoCardProps) {
                      </Typography>
                      <Box sx={{ flex: 1 }}>
                         <Typography variant="body2" color="text">
-                           ${order.amount.toFixed(2)}
+                           ${order.total_price.toFixed(2)}
                         </Typography>
                      </Box>
                   </ListItem>
@@ -174,15 +125,15 @@ export function OrderBasicInfoCard({ order }: OrderBasicInfoCardProps) {
                            variant="body2"
                            color={
                               {
-                                 PENDING: 'info',
-                                 DELIVERIED: 'secondary',
-                                 REFUNDED: 'error',
-                                 PROCESSING: 'primary',
-                                 CANCELED: 'warning'
-                              }[order.status || 'PENDING']
+                                 pending: 'info',
+                                 preparing: 'secondary',
+                                 on_the_way: 'error',
+                                 delivered: 'primary',
+                                 cancel: 'warning'
+                              }[order.tracking_state || 'pending']
                            }
                         >
-                           {order.status}
+                           {order.tracking_state === "on_the_way" ? "Shipping" : order.tracking_state[0].toUpperCase() + order.tracking_state.substring(1)}
                         </Typography>
                      </Box>
                   </ListItem>
@@ -199,5 +150,5 @@ export function OrderBasicInfoCard({ order }: OrderBasicInfoCardProps) {
             )}
          </CardContent>
       </Card>
-   );
+   )
 }

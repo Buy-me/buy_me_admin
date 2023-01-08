@@ -1,10 +1,14 @@
 import privateClient from './client'
+import publicClient from './publicClient'
 
 const foodEndpoints = {
+   create: '/foods',
+   update: id => `/foods/${id}`,
    list: '/foods',
    get: foodId => `/foods/${foodId}`,
    rating: foodId => `/foods/${foodId}/rating`,
-   listRatingFood: foodId => `/foods/${foodId}/rating/list`
+   listRatingFood: foodId => `/foods/${foodId}/rating/list`,
+   upload: '/upload'
 }
 
 const foodApi = {
@@ -23,23 +27,6 @@ const foodApi = {
          return { err }
       }
    },
-   // getList: async (params) => {
-   //   console.log(params);
-   //   try {
-   //     const response = await privateClient.get(foodEndpoints.list, {
-   //       params: {
-   //         sort: params.sort,
-   //         category_id: params.categoryId || 0,
-   //         min_price: params.minPrice || 0,
-   //         max_price: params.maxPrice || 0,
-   //         search: params.search || "",
-   //       },
-   //     });
-   //     return { response };
-   //   } catch (err) {
-   //     return { err };
-   //   }
-   // },
    rating: async (foodId, data) => {
       try {
          const response = await privateClient.post(foodEndpoints.rating(foodId), {
@@ -61,6 +48,35 @@ const foodApi = {
    get: async foodId => {
       try {
          const response = await privateClient.get(foodEndpoints.get(foodId))
+         return { response }
+      } catch (err) {
+         return { err }
+      }
+   },
+   create: async data => {
+      try {
+         const response = await privateClient.post(foodEndpoints.create, data)
+         return { response }
+      } catch (err) {
+         return { err }
+      }
+   },
+   upload: async data => {
+      let formData = new FormData()
+      formData.append('file', data.file)
+      formData.append('folder', data.folder || 'foods')
+      try {
+         const response = await publicClient.post(foodEndpoints.upload, formData, {
+            headers: { 'Content-Type': 'multipart/form-data' }
+         })
+         return { response }
+      } catch (err) {
+         return { err }
+      }
+   },
+   update: async (id, data) => {
+      try {
+         const response = await privateClient.patch(foodEndpoints.update(id), data)
          return { response }
       } catch (err) {
          return { err }

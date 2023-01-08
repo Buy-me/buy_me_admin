@@ -8,54 +8,50 @@ import {
    Tabs,
    Typography
 } from '@mui/material'
-import { orderApi } from 'api-client'
-import axiosClient from 'api-client/axios-client'
-import { DashboardLayout } from 'components/layouts'
-import { OrderDetailModal } from 'components/order/order-detail'
+import orderApi from 'api/orderApi'
+import DashboardLayout from 'components/layouts/dashboard-layout'
 import { OrderListResults } from 'components/order/order-list-results'
-import { Order, PaginationParams, ResponseListData } from 'models'
+import { PaginationParamsV2 } from 'models'
 import Head from 'next/head'
-import queryString from 'query-string'
-import { ChangeEvent, MouseEvent, useState } from 'react'
+import { ChangeEvent, MouseEvent, useEffect, useState } from 'react'
 import PerfectScrollbar from 'react-perfect-scrollbar'
-import useSWR from 'swr'
+import {useSnackbar} from 'notistack'
 
 const DEFAULT_PAGINATION = {
-   totalItems: 10,
-   totalPages: 1,
-   currentPage: 1,
-   pageSize: 10
+   limit: 10,
+   page: 1,
+   total: 10,
 }
 
 const Orders = () => {
    const [filters, setFilters] = useState({ status: '', orderBy: 'updatedAt-desc' })
-   const [pagination, setPagination] = useState<PaginationParams>(DEFAULT_PAGINATION)
+   const [pagination, setPagination] = useState<PaginationParamsV2>(DEFAULT_PAGINATION)
+   const [orderList, setOrderList] = useState([]);
 
-   const fetcher = (url: string) => {
-      return axiosClient
-         .get<any, ResponseListData<Order>>(url)
-         .then((res: ResponseListData<Order>) => {
-            setPagination(res.pagination)
-            return res.data
+   const {enqueueSnackbar} = useSnackbar()
+
+   useEffect(() => {
+      const getOrders = () => {
+         orderApi.listOrder(pagination.limit, pagination.page)
+         .then(({response}) => {
+            setOrderList(response?.data)
          })
-   }
-
-   const { data: orderList, mutate } = useSWR(
-      `orders?page=${pagination.currentPage}&pageSize=${
-         pagination.pageSize
-      }&${queryString.stringify(filters, { skipEmptyString: true })}`,
-      fetcher,
-      {
-         revalidateOnFocus: true
+         .catch(({error}) => {
+            enqueueSnackbar(error.message, {
+               variant: 'error'
+            })
+         })
       }
-   )
+
+      getOrders()
+   },[])
 
    const handleLimitChange = (event: ChangeEvent<HTMLTextAreaElement | HTMLInputElement>) => {
-      setPagination({ ...pagination, pageSize: Number.parseInt(event.target.value) })
+      setPagination({ ...pagination, limit: Number.parseInt(event.target.value) })
    }
 
    const handlePageChange = (event: MouseEvent<HTMLButtonElement> | null, newPage: number) => {
-      setPagination({ ...pagination, currentPage: newPage + 1 })
+      setPagination({ ...pagination, page: newPage + 1 })
    }
 
    const handleChangeTab = (event: React.SyntheticEvent, newValue: string) => {
@@ -104,10 +100,10 @@ const Orders = () => {
                   <Card>
                      <Tabs value={filters.status} onChange={handleChangeTab}>
                         <Tab label="All" value="" />
-                        <Tab label="Pending" value="PENDING" />
+                        {/* <Tab label="Pending" value="PENDING" />
                         <Tab label="Processing" value="PROCESSING" />
                         <Tab label="Deliveried" value="DELIVERIED" />
-                        <Tab label="Canceled" value="CANCELED" />
+                        <Tab label="Canceled" value="CANCELED" /> */}
                      </Tabs>
                      <Divider />
 
@@ -121,11 +117,11 @@ const Orders = () => {
                      </PerfectScrollbar>
                      <TablePagination
                         component="div"
-                        count={pagination.totalItems}
+                        count={pagination.total}
                         onPageChange={handlePageChange}
                         onRowsPerPageChange={handleLimitChange}
-                        page={pagination.currentPage - 1}
-                        rowsPerPage={pagination.pageSize}
+                        page={pagination.page - 1}
+                        rowsPerPage={pagination.limit}
                         rowsPerPageOptions={[5, 10, 25]}
                      />
                   </Card>

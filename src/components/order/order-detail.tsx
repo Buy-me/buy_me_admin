@@ -199,7 +199,7 @@ export function OrderDetailModal({
                      </Typography>
                      <Box sx={{ flex: 1 }}>
                         <Typography variant="body2" color="text">
-                           {order?.payment}
+                           {order?.type}
                         </Typography>
                      </Box>
                   </ListItem>
