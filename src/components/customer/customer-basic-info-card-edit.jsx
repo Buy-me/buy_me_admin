@@ -87,10 +87,10 @@ const CustomerBasicInfoCardEdit = ({ customer, onSave, onDelete }) => {
 
    const handleSave = async values => {
       console.log(values)
-      // if (onSave) {
-      //    const payload = { ...values }
-      //    await onSave(payload)
-      // }
+      if (onSave) {
+         const payload = { ...values }
+         await onSave(payload)
+      }
    }
 
    const handleDeleteClick = async event => {

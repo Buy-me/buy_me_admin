@@ -26,7 +26,7 @@ const schema = yup.object({
    desc: yup.string().max(255).required(),
    price: yup
       .number()
-      .test('is-decimal', 'invalid decimal', value => (value + '').match(/^\d*\.{1}\d*$/)),
+      .test('is-decimal', 'invalid decimal', value => (value + '').match(/^[+-]?\d+(\.\d+)?$/)),
    quantity: yup.number().integer().min(0)
 })
 

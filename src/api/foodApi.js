@@ -18,7 +18,7 @@ const foodApi = {
             params: {
                limit: pagination.limit,
                page: pagination.page,
-               search: filters.search,
+               search: filters.search || '',
                sort: filters.orderBy
             }
          })

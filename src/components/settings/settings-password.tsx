@@ -8,19 +8,7 @@ import { ChangePasswordFormValues } from 'models'
 import { yupResolver } from '@hookform/resolvers/yup'
 
 const schema = yup.object().shape({
-   oldPassword: yup
-      .string()
-      .max(255)
-      .label('Old password')
-      .required()
-      .test('check-old-password-is-correct', 'Old password is not correct', async value => {
-         try {
-            await authApi.changePassword({ oldPassword: value })
-            return true
-         } catch (error) {
-            return false
-         }
-      }),
+   oldPassword: yup.string().max(255).label('Old password').required(),
    newPassword: yup.string().min(4).max(255).label('New password').required(),
    confirmPassword: yup
       .string()
@@ -37,12 +25,20 @@ export const SettingsPassword = ({ onSubmit, ...restProps }: { onSubmit: Functio
    })
    const {
       control,
+      reset,
       handleSubmit,
       formState: { isSubmitting }
    } = form
 
    const handleSave = async (values: ChangePasswordFormValues) => {
-      if (onSubmit) await onSubmit(values)
+      if (onSubmit) {
+         try {
+            await onSubmit({
+               old_password: values.oldPassword,
+               new_password: values.newPassword
+            })
+         } catch (error) {}
+      }
    }
 
    return (

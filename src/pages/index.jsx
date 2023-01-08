@@ -1,5 +1,6 @@
 import { Box, Container, Grid } from '@mui/material'
-import { DashboardCards, LatestOrders, LatestProducts, Sales } from 'components/dashboard'
+import { DashboardCards, LatestOrders, Sales } from 'components/dashboard'
+import LatestProducts from 'components/dashboard/latest-products'
 import DashboardLayout from 'components/layouts/dashboard-layout'
 import Head from 'next/head'
 
@@ -18,9 +19,9 @@ const Dashboard = () => (
          <Container maxWidth={false}>
             <Grid container spacing={3}>
                <DashboardCards />
-               <Grid item lg={12} md={12} xl={9} xs={12}>
+               {/* <Grid item lg={12} md={12} xl={9} xs={12}>
                   <Sales />
-               </Grid>
+               </Grid> */}
                <Grid item lg={4} md={6} xl={3} xs={12}>
                   <LatestProducts sx={{ height: '100%' }} />
                </Grid>

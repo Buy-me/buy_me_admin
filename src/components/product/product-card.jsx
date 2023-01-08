@@ -37,7 +37,7 @@ const ProductCard = ({ product, onEditClick, onDeleteClick, ...rest }) => {
                margin: 2,
                marginTop: 1
             }}
-            variant="h5"
+            variant="h6"
          >
             ${product.price}
          </Typography>
@@ -50,7 +50,7 @@ const ProductCard = ({ product, onEditClick, onDeleteClick, ...rest }) => {
          />
          <CardContent>
             <Tooltip title={product.name || false} placement="top">
-               <Typography align="center" noWrap color="textPrimary" gutterBottom variant="h5">
+               <Typography align="center" noWrap color="textPrimary" gutterBottom variant="h6">
                   {product.name}
                </Typography>
             </Tooltip>
@@ -131,7 +131,7 @@ const ProductCard = ({ product, onEditClick, onDeleteClick, ...rest }) => {
          <Skeleton variant="rectangular" height={220} />
          {/* <CardMedia component="img" height="220" component={<Skeleton variant="rectangular" />} /> */}
          <CardContent>
-            <Typography align="center" color="textPrimary" gutterBottom variant="h5">
+            <Typography align="center" color="textPrimary" gutterBottom variant="h6">
                <Skeleton variant="text" />
             </Typography>
             <Typography noWrap align="center" color="textPrimary" variant="body1">

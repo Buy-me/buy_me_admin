@@ -5,25 +5,38 @@ import AccountProfileDetails from 'components/account/account-profile-details'
 import { ChangePasswordFormValues, User } from 'models'
 import { SettingsPassword } from 'components/settings/settings-password'
 import DashboardLayout from 'components/layouts/dashboard-layout'
+import userApi from 'api/userApi'
+import { useSnackbar } from 'notistack'
 
 const Account = () => {
    // const { updateProfile } = useAuth()
+   const { enqueueSnackbar } = useSnackbar()
 
-   const handleUpdateAccount = async (payload: Partial<User>) => {
-      // try {
-      //    await updateProfile(payload)
-      // } catch (error) {
-      //    console.log('error to update profile', error)
-      // }
+   const handleUpdateAccount = async payload => {
+      const { response, err } = await userApi.updateProfile(payload)
+      if (err) {
+         enqueueSnackbar(err.message, {
+            variant: 'error'
+         })
+         return
+      }
+      enqueueSnackbar('Update profile successfully', {
+         variant: 'success'
+      })
    }
-   const handleChangePassword = async (payload: ChangePasswordFormValues) => {
-      // try {
-      //    await authApi.changePassword(payload).then(res => {
-      //       console.log(res)
-      //    })
-      // } catch (error) {
-      //    console.log('error to update profile', error)
-      // }
+
+   const handleChangePassword = async payload => {
+      console.log(payload)
+      const { response, err } = await userApi.changePassword(payload)
+      if (err) {
+         enqueueSnackbar(err.message, {
+            variant: 'error'
+         })
+         return
+      }
+      enqueueSnackbar('Change password successfully', {
+         variant: 'success'
+      })
    }
 
    return (

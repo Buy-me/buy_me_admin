@@ -8,7 +8,10 @@ const userEndpoints = {
    profile: '/profile',
    listOrderByUserId: userId => `/orders/list-order/${userId}`,
    detailUser: userId => `/users/${userId}`,
-   delete: userId => `/users/${userId}`
+   delete: userId => `/users/${userId}`,
+   updateProfile: '/profile',
+   updateByUserId: id => `/users/${id}`,
+   changePassword: '/change-password'
 }
 
 const userApi = {
@@ -84,6 +87,31 @@ const userApi = {
    delete: async userId => {
       try {
          const response = await privateClient.delete(userEndpoints.delete(userId))
+         return { response }
+      } catch (err) {
+         return { err }
+      }
+   },
+   updateProfile: async data => {
+      try {
+         const response = await privateClient.patch(userEndpoints.updateProfile, data)
+         return { response }
+      } catch (err) {
+         return { err }
+      }
+   },
+   updateByUserId: async (data, userId) => {
+      console.log(data)
+      try {
+         const response = await privateClient.patch(userEndpoints.updateByUserId(userId), data)
+         return { response }
+      } catch (err) {
+         return { err }
+      }
+   },
+   changePassword: async data => {
+      try {
+         const response = await privateClient.patch(userEndpoints.changePassword, data)
          return { response }
       } catch (err) {
          return { err }

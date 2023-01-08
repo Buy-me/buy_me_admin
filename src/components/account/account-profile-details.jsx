@@ -63,7 +63,12 @@ const AccountProfileDetails = ({ onSubmit, ...restProps }) => {
    }, [profile, reset])
 
    const handleSave = async values => {
-      // if (onSubmit) await onSubmit(values)
+      if (onSubmit)
+         await onSubmit({
+            first_name: values.first_name,
+            phone: values.phone,
+            last_name: values.last_name
+         })
    }
    return (
       <form autoComplete="off" onSubmit={handleSubmit(handleSave)} {...restProps}>
@@ -77,7 +82,7 @@ const AccountProfileDetails = ({ onSubmit, ...restProps }) => {
                         disabled={isSubmitting}
                         control={control}
                         name="name"
-                        label="Full name"
+                        label="First name"
                         InputLabelProps={{ shrink: true }}
                      />
                   </Grid>
@@ -87,7 +92,7 @@ const AccountProfileDetails = ({ onSubmit, ...restProps }) => {
                         control={control}
                         placeholder="Last Name"
                         name="username"
-                        label="Username"
+                        label="Last Name"
                         InputLabelProps={{ shrink: true }}
                      />
                   </Grid>

@@ -138,7 +138,10 @@ export const OrderListResults = ({
                                    title={product?.food_origin?.name}
                                    placement="top"
                                 >
-                                   <Avatar variant="rounded" src={product?.food_origin?.images?.url} />
+                                   <Avatar
+                                      variant="rounded"
+                                      src={product?.food_origin?.images?.url}
+                                   />
                                 </Tooltip>
                              ))}
                              {order.items.length > 3 && (
@@ -156,7 +159,7 @@ export const OrderListResults = ({
                        <TableCell align="center" sx={{ pr: 5 }}>
                           ${order.total_price.toFixed(2)}
                        </TableCell>
-                       <TableCell align="center">{order.type}</TableCell>
+                       <TableCell align="center">{order.type || 'COD'}</TableCell>
                        <TableCell align="center" sx={{ minWidth: 200 }}>
                           <SeverityPill
                              color={
@@ -169,7 +172,9 @@ export const OrderListResults = ({
                                 }[order.tracking_state || 'pending']
                              }
                           >
-                             {order.tracking_state === "on_the_way" ? "Shipping" : order.tracking_state}
+                             {order.tracking_state === 'on_the_way'
+                                ? 'Shipping'
+                                : order.tracking_state}
                           </SeverityPill>
                        </TableCell>
                        <TableCell align="center">
@@ -219,5 +224,5 @@ export const OrderListResults = ({
                  ))}
          </TableBody>
       </Table>
-   );
+   )
 }

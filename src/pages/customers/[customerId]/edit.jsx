@@ -38,21 +38,25 @@ const EditCustomerPage = props => {
       getUsers()
    }, [customerId])
    const handleUpdateBasicInfo = async payload => {
+      console.log(payload)
       if (typeof customerId === 'string') {
-         try {
-            await customerApi.update(customerId, payload).then(res => {
-               console.log(res)
-               mutate(res.data, true)
-               router.push(`/customers/${customerId}`)
-               enqueueSnackbar(res.message, {
-                  variant: 'success'
-               })
-            })
-         } catch (error) {
-            enqueueSnackbar(error.message, {
+         const { response, err } = await userApi.updateByUserId(
+            {
+               first_name: payload.name,
+               phone: payload.phone,
+               last_name: payload.username
+            },
+            customerId
+         )
+         if (err) {
+            enqueueSnackbar(err.message, {
                variant: 'error'
             })
+            return
          }
+         enqueueSnackbar('Update profile successfully', {
+            variant: 'success'
+         })
       }
    }
 

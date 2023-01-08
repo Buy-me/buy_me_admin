@@ -42,9 +42,11 @@ const Products = () => {
             })
             return
          }
+         console.log(response.paging)
          setProductList(response.data)
          setPagination({ ...response.paging, total_items: response.data.length })
       }
+
       getFoods()
    }, [pagination.page, pagination.limit, pagination.total, filters.search])
 
@@ -210,11 +212,11 @@ const Products = () => {
                </Box>
 
                <Paper sx={{ mt: 1 }}>
-                  <Tabs value={filters.inStock} onChange={handleChangeTab}>
+                  {/* <Tabs value={filters.inStock} onChange={handleChangeTab}>
                      <Tab label="All" value="" />
                      <Tab label="Available" value="true" />
                      <Tab label="Out of stock" value="false" />
-                  </Tabs>
+                  </Tabs> */}
                   <Divider />
                   <ProductListToolbar
                      filters={filters}
@@ -243,8 +245,8 @@ const Products = () => {
                   >
                      <Pagination
                         color="primary"
-                        count={pagination.totalPages}
-                        page={pagination.currentPage}
+                        count={Math.ceil(pagination.total / pagination.limit)}
+                        page={pagination.page}
                         onChange={handleChangePagination}
                      />
                   </Box>

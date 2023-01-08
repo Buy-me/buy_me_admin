@@ -11,14 +11,24 @@ import {
    ListItemText,
    Skeleton
 } from '@mui/material'
+import foodApi from 'api/foodApi'
 import { formatDistance, parseISO } from 'date-fns'
 import { Product } from 'models'
 import NextLink from 'next/link'
+import { useSnackbar } from 'notistack'
+import { useEffect, useState } from 'react'
 import useSWR from 'swr'
 
-const NUMBER_PRODUCTS: number = 6
+const NUMBER_PRODUCTS = 6
 
-const ProductSkeleton = ({ numberProducts }: { numberProducts: number }) => (
+const DEFAULT_PAGINATION = {
+   total_items: 5,
+   total: 1,
+   page: 1,
+   limit: 5
+}
+
+const ProductSkeleton = ({ numberProducts }) => (
    <List>
       {Array.from(new Array(numberProducts)).map((product, index) => (
          <ListItem divider={index < NUMBER_PRODUCTS - 1} key={index}>
@@ -34,13 +44,27 @@ const ProductSkeleton = ({ numberProducts }: { numberProducts: number }) => (
    </List>
 )
 
-export const LatestProducts = (props: any) => {
-   const { data: products } = useSWR(
-      `products?page=1&pageSize=${NUMBER_PRODUCTS}&orderBy=updatedAt-desc`,
-      {
-         revalidateOnFocus: true
+const LatestProducts = props => {
+   const [products, seyProducts] = useState([])
+   const [pagination, setPagination] = useState(DEFAULT_PAGINATION)
+   const { enqueueSnackbar } = useSnackbar()
+   useEffect(() => {
+      const getFoods = async () => {
+         const { response, err } = await foodApi.getList(pagination, {
+            orderBy: 'created_at desc'
+         })
+         if (err) {
+            enqueueSnackbar(err.message, {
+               variant: 'error'
+            })
+            return
+         }
+         console.log(response.paging)
+         seyProducts(response.data)
       }
-   )
+
+      getFoods()
+   }, [pagination.page, pagination.limit, pagination.total])
 
    return (
       <Card {...props}>
@@ -51,12 +75,12 @@ export const LatestProducts = (props: any) => {
          <Divider />
          {products ? (
             <List>
-               {products.map((product: Product, i: number) => (
-                  <ListItem divider={i < products.length - 1} key={product._id}>
+               {products.map((product, i) => (
+                  <ListItem divider={i < products.length - 1} key={product.id}>
                      <ListItemAvatar>
                         <img
-                           alt={product.title}
-                           src={product.img}
+                           alt={product.name}
+                           src={product.images?.url}
                            style={{
                               height: 48,
                               width: 48
@@ -64,9 +88,9 @@ export const LatestProducts = (props: any) => {
                         />
                      </ListItemAvatar>
                      <ListItemText
-                        primary={product.title}
+                        primary={product.name}
                         secondary={`Updated ${formatDistance(
-                           parseISO(product.updatedAt),
+                           parseISO(product.updated_at),
                            new Date(),
                            { addSuffix: true }
                         )}`}
@@ -92,5 +116,7 @@ export const LatestProducts = (props: any) => {
             </NextLink>
          </Box>
       </Card>
-   );
+   )
 }
+
+export default LatestProducts

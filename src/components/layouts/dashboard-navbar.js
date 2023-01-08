@@ -109,7 +109,7 @@ export const DashboardNavbar = props => {
                      width: 40,
                      ml: 1
                   }}
-                  src="https://konsept-client.vercel.app/dist/src/assets/images/sang.jpg"
+                  src="http://food-delivery-tb.s3-website-ap-southeast-1.amazonaws.com/avatar/486027724.png"
                >
                   <UserCircleIcon fontSize="small" />
                </Avatar>
